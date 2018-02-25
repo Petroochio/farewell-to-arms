@@ -1,0 +1,23 @@
+{
+  "name": "farewell-to-arms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Petroochio/farewell-to-arms.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Petroochio/farewell-to-arms/issues"
+  },
+  "homepage": "https://github.com/Petroochio/farewell-to-arms#readme",
+  "dependencies": {
+    "electron": "1.8.2"
+  }
+}
