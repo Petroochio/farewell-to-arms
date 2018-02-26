@@ -5,7 +5,25 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build": "webpack",
+    "lint": "eslint ./src",
+    "install": "electron-rebuild -f -w serialport",
+    "build:watch": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "browsers": [
+              "Firefox > 50"
+            ]
+          }
+        }
+      ]
+    ]
   },
   "repository": {
     "type": "git",
@@ -18,6 +36,22 @@
   },
   "homepage": "https://github.com/Petroochio/farewell-to-arms#readme",
   "dependencies": {
-    "electron": "1.8.2"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "electron": "1.8.2",
+    "ramda": "^0.25.0",
+    "serialport": "^6.0.5",
+    "three": "^0.88.0",
+    "webpack": "^3.8.1",
+    "xstream": "^11.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.0.2",
+    "electron-rebuild": "^1.7.3",
+    "eslint": "^4.11.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
   }
 }

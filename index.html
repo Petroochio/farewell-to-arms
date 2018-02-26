@@ -2,9 +2,21 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Hello World!</title>
+    <title>Farewell</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello World!</h1>
+    <div id="view"></div>
   </body>
+
+  <script>
+    // Need to require serialport here bc build nonsense :|
+    const SerialPort =require('serialport');
+    require('./build/app.js')
+  </script>
 </html>
