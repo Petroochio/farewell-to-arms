@@ -26,9 +26,26 @@ const mat2 = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: true })
 const hipObj = new THREE.Object3D();
 const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(5, 20, 20), mat2);
 // Add parts to leg
-const thigh = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 15, 20), mat2);
+const thigh = new THREE.Mesh(new THREE.CylinderGeometry(5, 3, 15, 20), mat2);
 hipJoint.add(thigh);
 thigh.position.y = -7.5;
+// Knee/foot
+const knee = new THREE.Mesh(new THREE.SphereGeometry(3, 20, 20), mat2);
+thigh.add(knee);
+knee.position.y = -8;
+
+const calf = new THREE.Mesh(new THREE.CylinderGeometry(3, 2, 7, 20), mat2);
+knee.add(calf);
+calf.position.y = -4;
+knee.rotation.y = 0.4
+
+const foot = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 7, 20), mat2);
+foot.position.y = -4;
+foot.position.z = 2;
+foot.position.x = -1
+foot.rotation.z = Math.PI / 2;
+foot.rotation.y = Math.PI / 3;
+calf.add(foot);
 
 hipObj.add(hipJoint);
 
@@ -78,10 +95,10 @@ port.on('data', d => {
   if (data.length >= 2) {
     const x = parseInt(data[0]);
     const y = parseInt(take(data[1].split('').length - 2, data[1].split('')).join(''));
-    console.log(x, y);
+
     if (!isNaN(x) && !isNaN(y)) {
       // Get some angle out of data and map it
-      const angleX = lerp([0, 2000], [0, Math.PI], x);
+      const angleX = lerp([0, 2000], [-Math.PI, Math.PI], x);
       const angleY = lerp([0, 2000], [0, Math.PI], y);
 
       hipJoint.rotation.x = angleX;
