@@ -1,114 +1,71 @@
 import * as THREE from 'three';
-import { take, is } from 'ramda';
-
-// Threejs setup
-const viewContainer = document.querySelector('#view');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 50;
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-viewContainer.appendChild(renderer.domElement);
-
-// Now we get into some stuff
-const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
-light1.position.set(5, 5, 1);
-const light2 = new THREE.DirectionalLight(0xffffff, 0.6);
-light2.position.set(5, 2, 5);
-const light3 = new THREE.AmbientLight(0xffffff, 0.2);
-
-const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const mat2 = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: true });
-
-// Create Leg Base
-const hipObj = new THREE.Object3D();
-const hipJoint = new THREE.Mesh(new THREE.SphereGeometry(5, 20, 20), mat2);
-// Add parts to leg
-const thigh = new THREE.Mesh(new THREE.CylinderGeometry(5, 3, 15, 20), mat2);
-hipJoint.add(thigh);
-thigh.position.y = -7.5;
-// Knee/foot
-const knee = new THREE.Mesh(new THREE.SphereGeometry(3, 20, 20), mat2);
-thigh.add(knee);
-knee.position.y = -8;
-
-const calf = new THREE.Mesh(new THREE.CylinderGeometry(3, 2, 7, 20), mat2);
-knee.add(calf);
-calf.position.y = -4;
-knee.rotation.y = 0.4
-
-const foot = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 7, 20), mat2);
-foot.position.y = -4;
-foot.position.z = 2;
-foot.position.x = -1
-foot.rotation.z = Math.PI / 2;
-foot.rotation.y = Math.PI / 3;
-calf.add(foot);
-
-hipObj.add(hipJoint);
-
-scene.add(hipObj);
-scene.add(light1);
-scene.add(light2);
-scene.add(light3);
+import { take, is, filter, propEq, map } from 'ramda';
 
 // This renders stuff... Duh
 function render() {
   renderer.render(scene, camera);
 }
 
-render();
+const canvas = document.getElementById('track');
+const ctx = canvas.getContext('2d');
+// render();
+// Tracking test
+tracking.ColorTracker.registerColor(
+  'test',
+  (r, g, b) => (
+    r < 50 && r > 20 &&
+    g < 70 && g > 50 &&
+    b < 150 && b > 110
+  )
+);
 
-// Serial port test
-SerialPort.list((err, ports) => {
-  console.log('ports', ports);
-});
+const joints = new tracking.ColorTracker(['yellow', 'cyan', 'magenta']);
 
-// Set up connection to arduino
-const port = new SerialPort('/dev/tty.usbserial-DN03FK64', {
-  baudRate: 115200
-});
-const parser = new SerialPort.parsers.Readline({ delimiter: '\n;' });
-console.log(parser);
-// port.pipe(parser);
+tracking.track('#video', joints, { camera: true });
 
-port.open((err) => {
-  if (err) {
-    return console.log(err);
-  }
-});
-
-function lerp(range1, range2, value) {
-  const [x0, x1] = range1;
-  const [y0, y1] = range2;
-
-  const perc = (x1 - value) / (x1 - x0); //= (y1 - value2) / (y1 - y0);
-  return y1 - (perc * (y1 - y0));
+function drawJoint([x, y]) {
+  ctx.beginPath();
+  ctx.arc(x, y, 20, 0, 2 * Math.PI);
+  ctx.fill();
+  ctx.closePath();
 }
 
-// Data stream
-port.on('data', d => {
-  const data = d.toString().split(',')
+joints.on('track', (e) => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#fff9';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000';
 
-  if (data.length >= 2) {
-    const x = parseInt(data[0]);
-    const y = parseInt(take(data[1].split('').length - 2, data[1].split('')).join(''));
+  const centerRects = map(rect => [rect.x + (rect.width / 2), rect.y + (rect.height / 2)]);
+  // add code to handle multiple
+  const shoulder = centerRects(filter(propEq('color', 'cyan'), e.data));
+  const elbow = centerRects(filter(propEq('color', 'magenta'), e.data));
+  const wrist = centerRects(filter(propEq('color', 'yellow'), e.data));
 
-    if (!isNaN(x) && !isNaN(y)) {
-      // Get some angle out of data and map it
-      const angleX = lerp([0, 2000], [-Math.PI, Math.PI], x);
-      const angleY = lerp([0, 2000], [0, Math.PI], y);
+  shoulder.forEach(drawJoint);
+  elbow.forEach(drawJoint);
+  wrist.forEach(drawJoint);
 
-      hipJoint.rotation.x = angleX;
-      hipObj.rotation.y = angleY;
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 5;
+  // draw bones
+  if (shoulder.length > 0 && elbow.length > 0) {
+    const [x1, y1] = shoulder[0];
+    const [x2, y2] = elbow[0];
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.closePath();
+  }
 
-      render();
-    }
+  if (elbow.length > 0 && wrist.length > 0) {
+    const [x1, y1] = elbow[0];
+    const [x2, y2] = wrist[0];
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.closePath();
   }
 });
-
-// port.on('readable', function () {
-//   console.log('Data:', port.read());
-// });

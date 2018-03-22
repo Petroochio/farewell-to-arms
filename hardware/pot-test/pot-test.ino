@@ -2,6 +2,7 @@ const int pot0 = A0;
 const int pot1 = A1;
 
 
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
