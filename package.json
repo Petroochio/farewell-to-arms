@@ -44,6 +44,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "electron": "1.8.2",
     "matter-js": "^0.14.1",
+    "node-opencv": "0.0.2-security",
     "ramda": "^0.25.0",
     "serialport": "^6.0.5",
     "three": "^0.88.0",
