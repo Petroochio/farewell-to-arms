@@ -93,7 +93,7 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
       bodyB: wrist,
       pointB: { x: 0, y: 0 },
       length: 0,
-      stiffness: 0.2,
+      stiffness: 0.01,
     });
 
     // Hook up joints to motion tracking
@@ -135,7 +135,7 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
   };
 
   createArm(50, elbow1Target$, wrist1Target$);
-  createArm(-50, elbow2Target$, wrist2Target$);
+  // createArm(-50, elbow2Target$, wrist2Target$);
   return creature;
 }
 

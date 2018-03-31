@@ -16,9 +16,12 @@ export function registerColor(r, g, b, distance, alias) {
 // Api might need to change for multiple panes, depends on how I wanna track it
 // I could also add a function for splitting the currently tracked camera
 export function makeColorTrackingDriver(colors, source) {
-  const video = document.querySelector(source);
+  const video = document.querySelector('#video');
+  const canvas = document.querySelector('#tracker');
+  const ctx = canvas.getContext('2d');
 
-  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+  navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
 
   const handleVideo = (stream) => {
     video.src = window.URL.createObjectURL(stream);
@@ -33,14 +36,23 @@ export function makeColorTrackingDriver(colors, source) {
   }
 
   const tracker = new tracking.ColorTracker(colors);
-  tracking.track(source, tracker, { camera: true });
+  const triggerTrack = () => {
+    ctx.drawImage(video, 0, 0, video.width, video.height);
+    tracking.track('#tracker', tracker);
+    setTimeout(triggerTrack, 100);
+  };
+  triggerTrack();
 
   return () => ({
     track: () => {
       const trackProducer = {
         start: (listener) => {
           tracker.on('track', (e) => {
-            listener.next({});
+            listener.next(e);
+            ctx.fillStyle = 'blue';
+            e.data.forEach(({ x, y, width, height }) => {
+              // ctx.fillRect(x, y, width, height);
+            });
           });
         },
         stop: () => {

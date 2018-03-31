@@ -11,13 +11,13 @@ import Arm from './Arm';
 const canvas = document.getElementById('track');
 const ctx = canvas.getContext('2d');
 
-registerColor(70, 120, 200, 30, 'shoulder-1');
-registerColor(200, 70, 185, 30, 'elbow-1');
-registerColor(180, 215, 110, 30, 'wrist-1');
+registerColor(40, 70, 120, 20, 'shoulder-1'); // cyan
+registerColor(155, 0, 155, 20, 'elbow-1'); // magenta
+registerColor(80, 100, 60, 20, 'wrist-1'); // grn
 
-registerColor(145, 55, 5, 30, 'shoulder-2');
-registerColor(135, 135, 45, 30, 'elbow-2');
-registerColor(120, 10, 20, 30, 'wrist-2');
+registerColor(145, 55, 5, 30, 'shoulder-2'); // orange
+registerColor(135, 135, 45, 30, 'elbow-2'); // yellow
+registerColor(120, 10, 20, 30, 'wrist-2'); // red
 
 // Figure out how to bisect plane
 const drivers = {
@@ -26,7 +26,7 @@ const drivers = {
 };
 
 function main(sources) {
-  const color$ = sources.color.track();
+  const color$ = sources.color.track().map(prop('data'));
   const frame$ = sources.Time.animationFrames();
   // const arm1 = Arm({ color$, frame$ });
   const game = Game({ frame$, color$ });
