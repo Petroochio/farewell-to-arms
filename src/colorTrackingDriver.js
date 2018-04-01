@@ -49,9 +49,9 @@ export function makeColorTrackingDriver(colors, source) {
         start: (listener) => {
           tracker.on('track', (e) => {
             listener.next(e);
-            ctx.fillStyle = 'blue';
+            ctx.strokeStyle = 'white';
             e.data.forEach(({ x, y, width, height }) => {
-              ctx.fillRect(x, y, width, height);
+              ctx.strokeRect(x, y, width, height);
             });
           });
         },

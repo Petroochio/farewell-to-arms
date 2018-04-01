@@ -15,13 +15,13 @@ const ctx = canvas.getContext('2d');
 registerColor(140, 0, 140, 50, 'elbow-1'); // magenta
 registerColor(130, 170, 80, 50, 'wrist-1'); // grn
 
-// registerColor(145, 55, 5, 30, 'shoulder-2'); // orange
-// registerColor(135, 135, 45, 30, 'elbow-2'); // yellow
-// registerColor(120, 10, 20, 30, 'wrist-2'); // red // 'shoulder-1', 'shoulder-2', 'elbow-2', 'wrist-2'
+registerColor(180, 90, 30, 40, 'shoulder-2'); // orange
+registerColor(135, 135, 45, 40, 'elbow-2'); // yellow
+registerColor(120, 0, 30, 40, 'wrist-2'); //  // 'shoulder-1', 'shoulder-2', 'elbow-2', 'wrist-2'
 
 // Figure out how to bisect plane
 const drivers = {
-  color: makeColorTrackingDriver(['cyan', 'elbow-1', 'wrist-1'], '#video'),
+  color: makeColorTrackingDriver(['cyan', 'elbow-1', 'wrist-1', 'shoulder-2', 'elbow-2', 'wrist-2'], '#video'),
   Time: timeDriver,
 };
 

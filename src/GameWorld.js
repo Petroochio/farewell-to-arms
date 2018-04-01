@@ -17,7 +17,6 @@ function clearCanvas() {
 // World setup, move dis as well
 const defaultCategory = 0x0001;
 const creatureCategory = 0x0002;
-const limbCategory = 0x0006;
 const ghostCategory = 0x0004;
 const nullCategory = 0x0008;
 
@@ -47,20 +46,21 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     },
   };
 
-  const limbProps = {
+  const baseProps = {
     collisionFilter: {
       category: ghostCategory,
-      maks: nullCategory,
+      mask: nullCategory,
     },
+    isStatic: true,
   };
 
   const creature = Composite.create();
-  const base = Bodies.rectangle(120, 120, 100, 70, props);
+  const base = Bodies.rectangle(300, 420, 100, 70, baseProps);
   Composite.add(creature, base);
 
   const createArm = (offset, elbow$, wrist$) => {
-    const upperArm = Bodies.rectangle(195, 120, 50, 20, props);
-    const forearm = Bodies.rectangle(235, 120, 30, 15, props);
+    const upperArm = Bodies.rectangle(195, 120, 60, 20, props);
+    const forearm = Bodies.rectangle(235, 120, 60, 15, props);
 
     // Targets for joints
     const shoulderGhost = Bodies.circle(170, 120, 15, jointProps);
@@ -70,7 +70,7 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     // Constraints
     const shoulderJoint = Constraint.create({
       bodyA: base,
-      pointA: { x: offset, y: 0 },
+      pointA: { x: 50 * offset, y: 0 },
       bodyB: upperArm,
       pointB: { x: -25, y: 0 },
       length: 0,
@@ -79,16 +79,16 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
 
     const elbowJoint1 = Constraint.create({
       bodyA: upperArm,
-      pointA: { x: 25, y: 0 },
+      pointA: { x: 30, y: 0 },
       bodyB: elbowGhost,
       pointB: { x: 0, y: 0 },
-      length: 10,
+      length: 0,
       stiffness: 0.05,
     });
 
     const elbowJoint2 = Constraint.create({
       bodyA: forearm,
-      pointA: { x: -20, y: 0 },
+      pointA: { x: -30, y: 0 },
       bodyB: elbowGhost,
       pointB: { x: 0, y: 0 },
       length: 0,
@@ -96,17 +96,17 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     });
 
     const wristJoint = Constraint.create({
-      bodyA: forearm,
-      pointA: { x: 20, y: 0 },
-      bodyB: wristGhost,
-      pointB: { x: 0, y: 0 },
+      bodyA: wristGhost,
+      pointA: { x: 0, y: 0 },
+      bodyB: forearm,
+      pointB: { x: 30, y: 0 },
       length: 0,
       stiffness: 0.05,
     });
 
     const shoulderGhostJoint = Constraint.create({
       bodyA: base,
-      pointA: { x: offset, y: 0 },
+      pointA: { x: offset * 50, y: 0 },
       bodyB: shoulderGhost,
       pointB: { x: 0, y: 0 },
       stiffness: 1,
@@ -118,10 +118,9 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
       .map(([x, y]) => ({
         x: shoulderGhost.position.x + (x / 2),
         y: shoulderGhost.position.y + (y / 2),
-        length: Math.sqrt((x * x) + (y * y)) / 2,
       }))
       .subscribe({
-        next: ({ x, y, length }) => {
+        next: ({ x, y }) => {
           Body.setPosition(elbowGhost, { x, y });
         },
       });
@@ -130,11 +129,9 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
       .map(([x, y]) => ({
         x: elbowGhost.position.x + (x / 2),
         y: elbowGhost.position.y + (y / 2),
-        length: Math.sqrt((x * x) + (y * y)) / 2,
       }))
       .subscribe({
-        next: ({ x, y, length }) => {
-          wristJoint.length = length;
+        next: ({ x, y }) => {
           Body.setPosition(wristGhost, { x, y });
         },
       });
@@ -151,8 +148,8 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     Composite.add(creature, wristGhost);
   };
 
-  createArm(50, elbow1Target$, wrist1Target$);
-  // createArm(-50, elbow2Target$, wrist2Target$);
+  createArm(1, elbow1Target$, wrist1Target$);
+  createArm(-1, elbow2Target$, wrist2Target$);
   return creature;
 }
 
@@ -171,7 +168,6 @@ function intent(sources) {
   const elbow2$ = getColorStream('elbow-2');
   const wrist2$ = getColorStream('wrist-2');
 
-
   return {
     shoulder1$,
     elbow1$,
@@ -188,12 +184,16 @@ function draw(bodies) {
 
   bodies.forEach(({ vertices, label }) => {
     ctx.strokeStyle = label === 'ghost' ? '#f00' : '#fff';
+    ctx.fillStyle = label === 'ghost' ? '#f00' : '#fff';
     ctx.beginPath();
     ctx.moveTo(vertices[0].x, vertices[0].y);
     tail(vertices).forEach(({ x, y }) => ctx.lineTo(x, y));
     ctx.lineTo(vertices[0].x, vertices[0].y);
     ctx.closePath();
-    ctx.stroke();
+
+    if (label !== 'ghost') {
+      ctx.fill();
+    }
   });
 }
 
@@ -204,7 +204,7 @@ function GameWorld(sources) {
     isStatic: true,
     collisionFilter: {
       category: defaultCategory,
-      mask: creatureCategory,
+      // mask: creatureCategory,
     },
   };
 
@@ -243,13 +243,32 @@ function GameWorld(sources) {
     .map(nth(1));
 
   const engine = Engine.create();
+  engine.world.gravity.y = 0.01;
   const creature = createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Target$);
   const floor = Bodies.rectangle(300, 700, 600, 500, wallProps);
   const left = Bodies.rectangle(-100, 225, 200, 450, wallProps);
   const right = Bodies.rectangle(700, 225, 200, 450, wallProps);
   const top = Bodies.rectangle(300, 0, 600, -10, wallProps);
 
-  World.add(engine.world, [creature, floor, left, right, top]);
+  const ballProps = {
+    collisionFilter: {
+      category: defaultCategory,
+    },
+    density: 1,
+  };
+  const balls = [
+    Bodies.circle(300, 101, 50, ballProps),
+    Bodies.circle(301, 102, 50, ballProps),
+    Bodies.circle(302, 103, 50, ballProps),
+    Bodies.circle(303, 104, 50, ballProps),
+    Bodies.circle(304, 105, 50, ballProps),
+    Bodies.circle(305, 106, 50, ballProps),
+    Bodies.circle(306, 107, 50, ballProps),
+    Bodies.circle(307, 108, 50, ballProps),
+    Bodies.circle(308, 100, 50, ballProps),
+  ];
+
+  World.add(engine.world, [creature, floor, left, right, top, ...balls]);
 
   sources.frame$
     // .map(compose(divide(__, 60), prop('delta')))
