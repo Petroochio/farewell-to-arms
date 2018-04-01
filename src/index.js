@@ -11,17 +11,17 @@ import Arm from './Arm';
 const canvas = document.getElementById('track');
 const ctx = canvas.getContext('2d');
 
-registerColor(40, 70, 120, 20, 'shoulder-1'); // cyan
-registerColor(155, 0, 155, 20, 'elbow-1'); // magenta
-registerColor(80, 100, 60, 20, 'wrist-1'); // grn
+// registerColor(0, 0, 0, 40, 'shoulder-1'); // cyan // 'shoulder-1'
+registerColor(140, 0, 140, 50, 'elbow-1'); // magenta
+registerColor(130, 170, 80, 50, 'wrist-1'); // grn
 
-registerColor(145, 55, 5, 30, 'shoulder-2'); // orange
-registerColor(135, 135, 45, 30, 'elbow-2'); // yellow
-registerColor(120, 10, 20, 30, 'wrist-2'); // red
+// registerColor(145, 55, 5, 30, 'shoulder-2'); // orange
+// registerColor(135, 135, 45, 30, 'elbow-2'); // yellow
+// registerColor(120, 10, 20, 30, 'wrist-2'); // red // 'shoulder-1', 'shoulder-2', 'elbow-2', 'wrist-2'
 
 // Figure out how to bisect plane
 const drivers = {
-  color: makeColorTrackingDriver(['shoulder-1', 'elbow-1', 'wrist-1', 'shoulder-2', 'elbow-2', 'wrist-2'], '#video'),
+  color: makeColorTrackingDriver(['cyan', 'elbow-1', 'wrist-1'], '#video'),
   Time: timeDriver,
 };
 

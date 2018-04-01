@@ -3,11 +3,8 @@ import xs from 'xstream';
 export function registerColor(r, g, b, distance, alias) {
   tracking.ColorTracker.registerColor(
     alias,
-    (r1, g1, b1) => (
-      r1 < r + distance && r1 > r - distance &&
-      g1 < g + distance && g1 > g - distance &&
-      b1 < b + distance && b1 > b - distance
-    )
+    (r1, g1, b1) =>
+      (((r1 - r) * (r1 - r)) + ((g1 - g) * (g1 - g)) + ((b1 - b) * (b1 - b))) < (distance * distance)
   );
 
   return 'not yet implemented';
@@ -37,7 +34,10 @@ export function makeColorTrackingDriver(colors, source) {
 
   const tracker = new tracking.ColorTracker(colors);
   const triggerTrack = () => {
-    ctx.drawImage(video, 0, 0, video.width, video.height);
+    ctx.save();
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, -video.width, video.height);
+    ctx.restore();
     tracking.track('#tracker', tracker);
     setTimeout(triggerTrack, 100);
   };
@@ -51,7 +51,7 @@ export function makeColorTrackingDriver(colors, source) {
             listener.next(e);
             ctx.fillStyle = 'blue';
             e.data.forEach(({ x, y, width, height }) => {
-              // ctx.fillRect(x, y, width, height);
+              ctx.fillRect(x, y, width, height);
             });
           });
         },

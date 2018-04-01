@@ -17,6 +17,7 @@ function clearCanvas() {
 // World setup, move dis as well
 const defaultCategory = 0x0001;
 const creatureCategory = 0x0002;
+const limbCategory = 0x0006;
 const ghostCategory = 0x0004;
 const nullCategory = 0x0008;
 
@@ -34,86 +35,101 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     isStatic: true,
     collisionFilter: {
       category: ghostCategory,
+      mask: nullCategory,
+    },
+  };
+
+  const jointProps = {
+    label: 'ghost',
+    collisionFilter: {
+      category: ghostCategory,
+      mask: defaultCategory,
+    },
+  };
+
+  const limbProps = {
+    collisionFilter: {
+      category: ghostCategory,
       maks: nullCategory,
     },
   };
 
   const creature = Composite.create();
-  const base = Bodies.rectangle(100, 100, 100, 60, props);
+  const base = Bodies.rectangle(120, 120, 100, 70, props);
   Composite.add(creature, base);
 
   const createArm = (offset, elbow$, wrist$) => {
-    const shoulder = Bodies.rectangle(0, 0, 20, 20, props);
-    const elbow = Bodies.rectangle(0, 0, 15, 15, props);
-    const wrist = Bodies.rectangle(0, 0, 10, 10, props);
+    const upperArm = Bodies.rectangle(195, 120, 50, 20, props);
+    const forearm = Bodies.rectangle(235, 120, 30, 15, props);
 
     // Targets for joints
-    const elbowGhost = Bodies.circle(0, 0, 10, ghostProps);
-    const wristGhost = Bodies.circle(0, 0, 5, ghostProps);
+    const shoulderGhost = Bodies.circle(170, 120, 15, jointProps);
+    const elbowGhost = Bodies.circle(220, 120, 10, ghostProps);
+    const wristGhost = Bodies.circle(265, 130, 5, ghostProps);
 
     // Constraints
     const shoulderJoint = Constraint.create({
       bodyA: base,
       pointA: { x: offset, y: 0 },
-      bodyB: shoulder,
-      pointB: { x: 0, y: 0 },
+      bodyB: upperArm,
+      pointB: { x: -25, y: 0 },
       length: 0,
+      stiffness: 0.05,
     });
 
-    const elbowJoint = Constraint.create({
-      bodyA: shoulder,
-      pointA: { x: 0, y: 0 },
-      bodyB: elbow,
+    const elbowJoint1 = Constraint.create({
+      bodyA: upperArm,
+      pointA: { x: 25, y: 0 },
+      bodyB: elbowGhost,
       pointB: { x: 0, y: 0 },
       length: 10,
-      stiffness: 0.8,
+      stiffness: 0.05,
     });
 
-    const elbowGhostJoint = Constraint.create({
-      bodyA: elbowGhost,
-      pointA: { x: 0, y: 0 },
-      bodyB: elbow,
+    const elbowJoint2 = Constraint.create({
+      bodyA: forearm,
+      pointA: { x: -20, y: 0 },
+      bodyB: elbowGhost,
       pointB: { x: 0, y: 0 },
       length: 0,
-      stiffness: 0.2,
+      stiffness: 0.05,
     });
 
     const wristJoint = Constraint.create({
-      bodyA: elbow,
-      pointA: { x: 0, y: 0 },
-      bodyB: wrist,
-      pointB: { x: 0, y: 0 },
-      length: 10,
-      stiffness: 0.5,
-    });
-
-    const wristGhostJoint = Constraint.create({
-      bodyA: wristGhost,
-      pointA: { x: 0, y: 0 },
-      bodyB: wrist,
+      bodyA: forearm,
+      pointA: { x: 20, y: 0 },
+      bodyB: wristGhost,
       pointB: { x: 0, y: 0 },
       length: 0,
-      stiffness: 0.01,
+      stiffness: 0.05,
+    });
+
+    const shoulderGhostJoint = Constraint.create({
+      bodyA: base,
+      pointA: { x: offset, y: 0 },
+      bodyB: shoulderGhost,
+      pointB: { x: 0, y: 0 },
+      stiffness: 1,
+      length: 0,
     });
 
     // Hook up joints to motion tracking
     elbow$
       .map(([x, y]) => ({
-        x: shoulder.position.x + (x / 2),
-        y: shoulder.position.y + (y / 2),
+        x: shoulderGhost.position.x + (x / 2),
+        y: shoulderGhost.position.y + (y / 2),
         length: Math.sqrt((x * x) + (y * y)) / 2,
       }))
       .subscribe({
         next: ({ x, y, length }) => {
-          elbowJoint.length = length;
           Body.setPosition(elbowGhost, { x, y });
         },
       });
 
     wrist$
       .map(([x, y]) => ({
-        x: elbow.position.x + (x / 2),
-        y: elbow.position.y + (y / 2),
+        x: elbowGhost.position.x + (x / 2),
+        y: elbowGhost.position.y + (y / 2),
         length: Math.sqrt((x * x) + (y * y)) / 2,
       }))
       .subscribe({
@@ -123,15 +139,16 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
         },
       });
 
-    Composite.add(creature, shoulder);
+    Composite.add(creature, shoulderGhost);
+    Composite.add(creature, shoulderGhostJoint);
     Composite.add(creature, shoulderJoint);
-    Composite.add(creature, elbow);
-    Composite.add(creature, elbowJoint);
+    Composite.add(creature, upperArm);
+    Composite.add(creature, forearm);
+    Composite.add(creature, elbowJoint1);
+    Composite.add(creature, elbowJoint2);
     Composite.add(creature, elbowGhost);
-    Composite.add(creature, elbowGhostJoint);
-    Composite.add(creature, wrist);
     Composite.add(creature, wristJoint);
-    Composite.add(creature, wristGhostJoint);
+    Composite.add(creature, wristGhost);
   };
 
   createArm(50, elbow1Target$, wrist1Target$);
@@ -147,7 +164,7 @@ function intent(sources) {
     .filter(compose(not, isEmpty))
     .map(compose(centerRect, nth(0)));
 
-  const shoulder1$ = getColorStream('shoulder-1');
+  const shoulder1$ = getColorStream('cyan');
   const elbow1$ = getColorStream('elbow-1');
   const wrist1$ = getColorStream('wrist-1');
   const shoulder2$ = getColorStream('shoulder-2');
@@ -230,8 +247,9 @@ function GameWorld(sources) {
   const floor = Bodies.rectangle(300, 700, 600, 500, wallProps);
   const left = Bodies.rectangle(-100, 225, 200, 450, wallProps);
   const right = Bodies.rectangle(700, 225, 200, 450, wallProps);
+  const top = Bodies.rectangle(300, 0, 600, -10, wallProps);
 
-  World.add(engine.world, [creature, floor, left, right]);
+  World.add(engine.world, [creature, floor, left, right, top]);
 
   sources.frame$
     // .map(compose(divide(__, 60), prop('delta')))
