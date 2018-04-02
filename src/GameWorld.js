@@ -20,7 +20,7 @@ const creatureCategory = 0x0002;
 const ghostCategory = 0x0004;
 const nullCategory = 0x0008;
 
-function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Target$) {
+function createCreature(arm$) {
   const props = {
     collisionFilter: {
       category: creatureCategory,
@@ -55,7 +55,7 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
   };
 
   const creature = Composite.create();
-  const base = Bodies.rectangle(300, 420, 100, 70, baseProps);
+  const base = Bodies.rectangle(300, 420, 200, 70, baseProps);
   Composite.add(creature, base);
 
   const createArm = (offset, elbow$, wrist$) => {
@@ -70,11 +70,20 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     // Constraints
     const shoulderJoint = Constraint.create({
       bodyA: base,
-      pointA: { x: 50 * offset, y: 0 },
+      pointA: { x: 100 * offset, y: 0 },
       bodyB: upperArm,
       pointB: { x: -25, y: 0 },
       length: 0,
       stiffness: 0.05,
+    });
+
+    const shoulderGhostJoint = Constraint.create({
+      bodyA: base,
+      pointA: { x: offset * 100, y: 0 },
+      bodyB: shoulderGhost,
+      pointB: { x: 0, y: 0 },
+      stiffness: 1,
+      length: 0,
     });
 
     const elbowJoint1 = Constraint.create({
@@ -102,15 +111,6 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
       pointB: { x: 30, y: 0 },
       length: 0,
       stiffness: 0.05,
-    });
-
-    const shoulderGhostJoint = Constraint.create({
-      bodyA: base,
-      pointA: { x: offset * 50, y: 0 },
-      bodyB: shoulderGhost,
-      pointB: { x: 0, y: 0 },
-      stiffness: 1,
-      length: 0,
     });
 
     // Hook up joints to motion tracking
@@ -148,35 +148,11 @@ function createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Targe
     Composite.add(creature, wristGhost);
   };
 
-  createArm(1, elbow1Target$, wrist1Target$);
-  createArm(-1, elbow2Target$, wrist2Target$);
+  createArm(1, arm$.map(nth(0)), arm$.map(nth(1)));
+  createArm(-1, arm$.map(nth(2)), arm$.map(nth(3)));
+  createArm(0.5, arm$.map(nth(4)), arm$.map(nth(5)));
+  createArm(-0.5, arm$.map(nth(6)), arm$.map(nth(7)));
   return creature;
-}
-
-const centerRect = rect => [rect.x + (rect.width / 2), rect.y + (rect.height / 2)];
-
-function intent(sources) {
-  const { frame$, color$ } = sources;
-  const getColorStream = id => color$.map(filter(propEq('color', id)))
-    .filter(compose(not, isEmpty))
-    .map(compose(centerRect, nth(0)));
-
-  const shoulder1$ = getColorStream('cyan');
-  const elbow1$ = getColorStream('elbow-1');
-  const wrist1$ = getColorStream('wrist-1');
-  const shoulder2$ = getColorStream('shoulder-2');
-  const elbow2$ = getColorStream('elbow-2');
-  const wrist2$ = getColorStream('wrist-2');
-
-  return {
-    shoulder1$,
-    elbow1$,
-    wrist1$,
-    shoulder2$,
-    elbow2$,
-    wrist2$,
-    frame$,
-  };
 }
 
 function draw(bodies) {
@@ -198,8 +174,6 @@ function draw(bodies) {
 }
 
 function GameWorld(sources) {
-  const actions = intent(sources);
-
   const wallProps = {
     isStatic: true,
     collisionFilter: {
@@ -208,43 +182,9 @@ function GameWorld(sources) {
     },
   };
 
-  // Target relative to shoulder
-  const elbow1Relative$ = xs.combine(actions.shoulder1$, actions.elbow1$)
-    .map(([[x1, y1], [x2, y2]]) => [x2 - x1, y2 - y1])
-    .startWith([10, 10]);
-
-  const elbow1Target$ = sources.frame$
-    .compose(sampleCombine(elbow1Relative$))
-    .map(nth(1));
-
-  const wrist1Relative$ = xs.combine(actions.elbow1$, actions.wrist1$)
-    .map(([[x1, y1], [x2, y2]]) => [x2 - x1, y2 - y1])
-    .startWith([10, 10]);
-
-  const wrist1Target$ = sources.frame$
-    .compose(sampleCombine(wrist1Relative$))
-    .map(nth(1));
-
-  // 2nd armgbtt
-  const elbow2Relative$ = xs.combine(actions.shoulder2$, actions.elbow2$)
-    .map(([[x1, y1], [x2, y2]]) => [x2 - x1, y2 - y1])
-    .startWith([10, 10]);
-
-  const elbow2Target$ = sources.frame$
-    .compose(sampleCombine(elbow2Relative$))
-    .map(nth(1));
-
-  const wrist2Relative$ = xs.combine(actions.elbow2$, actions.wrist2$)
-    .map(([[x1, y1], [x2, y2]]) => [x2 - x1, y2 - y1])
-    .startWith([10, 10]);
-
-  const wrist2Target$ = sources.frame$
-    .compose(sampleCombine(wrist2Relative$))
-    .map(nth(1));
-
   const engine = Engine.create();
   engine.world.gravity.y = 0.01;
-  const creature = createCreature(elbow1Target$, wrist1Target$, elbow2Target$, wrist2Target$);
+  const creature = createCreature(sources.arm$);
   const floor = Bodies.rectangle(300, 700, 600, 500, wallProps);
   const left = Bodies.rectangle(-100, 225, 200, 450, wallProps);
   const right = Bodies.rectangle(700, 225, 200, 450, wallProps);

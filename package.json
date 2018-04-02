@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "webpack && node server.js",
     "build": "webpack",
     "lint": "eslint ./src",
     "install": "electron-rebuild -f -w serialport",

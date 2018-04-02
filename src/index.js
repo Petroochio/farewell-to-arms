@@ -96,7 +96,8 @@ function main(sources) {
 
   const game = Game({
     frame$: actions.frame$,
-    color$: sources.color.track().map(prop('data'))
+    color$: sources.color.track().map(prop('data')),
+    arm$: sources.socket.events('server-update'),
   });
 
   return {

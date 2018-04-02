@@ -10,7 +10,7 @@ export function makeSocketDriver() {
     });
 
     return {
-      event: (name) => {
+      events: (name) => {
         const socketProducer = {
           start: (listener) => {
             socket.on(name, (e) => {
