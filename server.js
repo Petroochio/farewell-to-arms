@@ -21,7 +21,6 @@ const armData = {
 };
 
 io.on('connection', (socket) => {
-  console.log(socket.id);
   console.log('a user connected');
   if (player1 === '') {
     player1 = socket.id;
@@ -30,6 +29,7 @@ io.on('connection', (socket) => {
   } else {
     queue.push(socket.id);
   }
+  console.log('new: ', socket.id, ' p1: ', player1, ' p2: ', player2, ' queue: ', queue.length);
 
   socket.on('client-update', (data) => {
     /* client data shape
@@ -50,6 +50,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (player1 === socket.id) {
+      console.log('p1 left');
       player1 = player2;
       if (queue.length > 0) {
         player2 = R.nth(0, queue);
@@ -57,8 +58,8 @@ io.on('connection', (socket) => {
       } else {
         player2 = '';
       }
-    } else if (player2 === '') {
-      player1 = player2;
+    } else if (player2 === socket.id) {
+      console.log('p2 left');
       if (queue.length > 0) {
         player2 = R.nth(0, queue);
         queue = R.tail(queue);
@@ -68,6 +69,8 @@ io.on('connection', (socket) => {
     } else {
       queue.filter(R.compose(R.not, R.equals(socket.id)));
     }
+
+    console.log('new: ', socket.id, ' p1: ', player1, ' p2: ', player2, ' queue: ', queue.length);
   });
 });
 const port = process.env.PORT || 3000;

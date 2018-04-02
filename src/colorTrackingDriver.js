@@ -39,7 +39,7 @@ export function makeColorTrackingDriver(colors, source) {
     ctx.drawImage(video, 0, 0, -video.width, video.height);
     ctx.restore();
     tracking.track('#tracker', tracker);
-    setTimeout(triggerTrack, 100);
+    setTimeout(triggerTrack, 70);
   };
   triggerTrack();
 
