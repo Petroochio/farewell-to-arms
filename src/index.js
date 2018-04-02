@@ -13,11 +13,11 @@ const canvas = document.getElementById('track');
 const ctx = canvas.getContext('2d');
 
 // registerColor(0, 0, 0, 40, 'shoulder-1'); // cyan // 'shoulder-1'
-registerColor(140, 0, 140, 50, 'elbow-1'); // magenta
+registerColor(170, 0, 140, 50, 'elbow-1'); // magenta
 registerColor(130, 170, 80, 30, 'wrist-1'); // grn
 
 registerColor(180, 90, 30, 40, 'shoulder-2'); // orange
-registerColor(135, 135, 45, 30, 'elbow-2'); // yellow
+registerColor(200, 200, 80, 30, 'elbow-2'); // yellow
 registerColor(120, 0, 30, 45, 'wrist-2'); //  // 'shoulder-1', 'shoulder-2', 'elbow-2', 'wrist-2'
 
 // Figure out how to bisect plane
