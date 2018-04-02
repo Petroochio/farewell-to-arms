@@ -56,7 +56,7 @@ function createCreature(arm$) {
   };
 
   const creature = Composite.create();
-  const base = Bodies.rectangle(300, 420, 200, 70, baseProps);
+  const base = Bodies.rectangle(300, 320, 200, 40, baseProps);
   Composite.add(creature, base);
 
   const createArm = (offset, elbow$, wrist$) => {
@@ -71,7 +71,7 @@ function createCreature(arm$) {
     // Constraints
     const shoulderJoint = Constraint.create({
       bodyA: base,
-      pointA: { x: 100 * offset, y: -20 },
+      pointA: { x: 100 * offset, y: 0 },
       bodyB: upperArm,
       pointB: { x: -40, y: 0 },
       length: 0,
@@ -80,7 +80,7 @@ function createCreature(arm$) {
 
     const shoulderGhostJoint = Constraint.create({
       bodyA: base,
-      pointA: { x: offset * 100, y: -20 },
+      pointA: { x: offset * 100, y: 0 },
       bodyB: shoulderGhost,
       pointB: { x: 0, y: 0 },
       stiffness: 1,

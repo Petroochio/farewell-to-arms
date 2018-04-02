@@ -34,7 +34,6 @@ export function makeColorTrackingDriver(colors, source) {
       canvas.className = '';
       showCanvas = true;
     }
-    console.log(showCanvas);
   });
 
   function videoError(e) {
