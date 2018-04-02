@@ -149,10 +149,10 @@ function createCreature(arm$) {
     Composite.add(creature, wristGhost);
   };
 
-  createArm(1, arm$.map(nth(0)), arm$.map(nth(1)));
-  createArm(-1, arm$.map(nth(2)), arm$.map(nth(3)));
+  createArm(-1, arm$.map(nth(0)), arm$.map(nth(1)));
+  createArm(-0.35, arm$.map(nth(2)), arm$.map(nth(3)));
   createArm(0.35, arm$.map(nth(4)), arm$.map(nth(5)));
-  createArm(-0.35, arm$.map(nth(6)), arm$.map(nth(7)));
+  createArm(1, arm$.map(nth(6)), arm$.map(nth(7)));
   return creature;
 }
 
