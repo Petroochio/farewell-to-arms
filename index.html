@@ -30,6 +30,12 @@
         
         width: 600px;
         height: 450px;
+        left: calc(50% - 325px);
+        top: 10%;
+      }
+
+      .hidden {
+        left: -1000px;
       }
 
       #track {
@@ -39,7 +45,7 @@
   </head>
   <body>
     <video id="video" width="600" height="450" preload autoplay loop muted controls></video>
-    <canvas id="tracker" width="600" height="450"></canvas>
+    <canvas id="tracker" width="600" height="450" class="hidden"></canvas>
     <canvas id="track" width="600" height="450"></canvas>
   </body>
 

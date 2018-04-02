@@ -24,6 +24,19 @@ export function makeColorTrackingDriver(colors, source) {
     video.src = window.URL.createObjectURL(stream);
   };
 
+  let showCanvas = false;
+
+  document.querySelector('body').addEventListener('click', () => {
+    if (showCanvas) {
+      canvas.className = 'hidden';
+      showCanvas = false;
+    } else {
+      canvas.className = '';
+      showCanvas = true;
+    }
+    console.log(showCanvas);
+  });
+
   function videoError(e) {
     // do something
   }
