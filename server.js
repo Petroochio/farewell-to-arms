@@ -18,6 +18,7 @@ let queue = [];
 const armData = {
   p1: [[10, 10], [10, 20], [10, 10], [10, 20]],
   p2: [[10, 10], [10, 20], [10, 10], [10, 20]],
+  ball: [300, 50],
 };
 
 io.on('connection', (socket) => {
@@ -48,6 +49,13 @@ io.on('connection', (socket) => {
     */
   });
 
+  socket.on('update-ball', (data) => {
+    if (socket.id === player1) {
+      armData.ball = data;
+      io.emit('server-ball-update', armData.ball);
+    }
+  });
+
   socket.on('disconnect', () => {
     if (player1 === socket.id) {
       console.log('p1 left');
@@ -73,6 +81,7 @@ io.on('connection', (socket) => {
     console.log('new: ', socket.id, ' p1: ', player1, ' p2: ', player2, ' queue: ', queue.length);
   });
 });
+
 const port = process.env.PORT || 3000;
 http.listen(port, () => {
   console.log('listening on *:3000');

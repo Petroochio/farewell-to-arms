@@ -210,7 +210,18 @@ function GameWorld(sources) {
     // Bodies.circle(308, 100, 50, ballProps),
   ];
 
+  const ballUpdate$ = xs.periodic(5000)
+    .map(() => ['update-ball', [balls[0].position, balls[0].velocity]]);
+
   World.add(engine.world, [creature, floor, left, right, top, ...balls]);
+
+  sources.ball$
+    .subscribe({
+      next: ([pos, velocity]) => {
+        Body.setPosition(balls[0], pos);
+        Body.setVelocity(balls[0], velocity);
+      },
+    });
 
   sources.frame$
     // .map(compose(divide(__, 60), prop('delta')))
@@ -221,6 +232,10 @@ function GameWorld(sources) {
         draw(Composite.allBodies(engine.world));
       },
     });
+
+  return {
+    ballUpdate$,
+  };
 }
 
 export default GameWorld;

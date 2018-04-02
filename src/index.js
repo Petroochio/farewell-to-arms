@@ -98,10 +98,11 @@ function main(sources) {
     frame$: actions.frame$,
     color$: sources.color.track().map(prop('data')),
     arm$: sources.socket.events('server-update'),
+    ball$: sources.socket.events('server-ball-update'),
   });
 
   return {
-    socket: emit$,
+    socket: xs.merge(game.ballUpdate$, emit$),
   };
 }
 
